@@ -13,6 +13,7 @@ public class PlayerHuman extends Player {
         super(boardSize);
         scanner = new Scanner(System.in);
         showOutput = true;
+        randomShipPlacement = false;
     }
 
     @Override
@@ -23,12 +24,20 @@ public class PlayerHuman extends Player {
 
     @Override
     public Point chooseShipStartPoint() {
-        return choosePoint();
+        if (randomShipPlacement) {
+            return getRandomPoint();
+        } else {
+            return choosePoint();
+        }
     }
 
     @Override
     public Direction chooseShipDirection() {
-        return Direction.factory(scanner.nextInt());
+        if (randomShipPlacement) {
+            return getRandomDirection();
+        } else {
+            return chooseDirection();
+        }
     }
 
     @Override
@@ -40,5 +49,16 @@ public class PlayerHuman extends Player {
         int x = scanner.nextInt();
         int y = scanner.nextInt();
         return new Point(x, y);
+    }
+
+    private Direction chooseDirection() {
+        return Direction.factory(scanner.nextInt());
+    }
+
+    @Override
+    public void setShipPlacementMode() {
+        if (scanner.next().equals("0")) {
+            randomShipPlacement = true;
+        }
     }
 }

@@ -143,9 +143,11 @@ public class Game {
     }
 
     private void setPlayerShips(Player player) {
+        printMonit(player, "Wpisz 0 jeśli chcesz losowo ustawić statki lub cokolwiek innego, jeśli chcesz to zrobić sam.");
+        player.setShipPlacementMode();
         for (int i = 0; i < SHIP_TYPE_COUNT; ++i) {
             for (int j = 0; j < shipCounts[i]; ++j) {
-                if (player.getShowOutput()) {
+                if (player.getShowOutput() && !player.getRandomShipPlacement()) {
                     clearConsole();
                     player.getBoard().drawBoard(true);
                 }

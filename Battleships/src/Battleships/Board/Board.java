@@ -23,7 +23,6 @@ public class Board {
     private static final String ANSI_CYAN = "\u001B[36m";
 
     private Field board[][];
-    private ArrayList<Field> lastMoveFields;
     private int boardSize;
 
     public Board(int boardSize) {
@@ -34,7 +33,6 @@ public class Board {
                 board[i][j] = new Field(new Point(i, j));
             }
         }
-        lastMoveFields = new ArrayList<>();
     }
 
     public void drawBoard(boolean isOwn) {
@@ -70,7 +68,6 @@ public class Board {
     public boolean shoot(Point coords) {
         Field shootField = board[coords.x][coords.y];
         shootField.shoot();
-        lastMoveFields.add(shootField);
         return shootField.hasShip();
     }
 
@@ -110,11 +107,7 @@ public class Board {
                     signToDraw = EMPTY_FIELD;
                 }
             } else if (field.isTouchingSunkenShip()) {
-                if (isOwnBoard) {
-                    signToDraw = EMPTY_FIELD;
-                } else {
-                    signToDraw = MISHIT;
-                }
+                signToDraw = MISHIT;
             } else {
                 signToDraw = EMPTY_FIELD;
             }
