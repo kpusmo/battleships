@@ -136,7 +136,7 @@ public class Game {
     private void initializeGame() {
         Player players[] = {firstPlayer, secondPlayer};
         for (int i = 0; i < players.length; ++i) {
-            printMonit(players[i], (new StringBuilder()).append("Gracz nr ").append(i + 1).append(": podaj swoje imię\n").toString());
+            printMonit(players[i], (new StringBuilder()).append("Gracz nr ").append(i + 1).append(": podaj swoje imię").toString());
             players[i].chooseName();
             setPlayerShips(players[i]);
         }
