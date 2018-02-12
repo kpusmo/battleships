@@ -10,17 +10,6 @@ import java.util.ArrayList;
 public class Board {
     private static final char HORIZONTAL_SEPARATOR = '-';
     private static final char VERTICAL_SEPARATOR = '|';
-    private static final char MISHIT = 'O';
-    private static final char HIT = 'X';
-    private static final char OWN_SHIP = 'Z';
-    private static final char EMPTY_FIELD = ' ';
-    private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_GREEN = "\u001B[32m";
-    private static final String ANSI_YELLOW = "\u001B[33m";
-    private static final String ANSI_BLUE = "\u001B[34m";
-    private static final String ANSI_PURPLE = "\u001B[35m";
-    private static final String ANSI_CYAN = "\u001B[36m";
 
     private Field board[][];
     private int boardSize;
@@ -41,11 +30,38 @@ public class Board {
         for (int y = 0; y < boardSize; ++y) {
             System.out.printf("%3s%3s", y, VERTICAL_SEPARATOR);
             for (int x = 0; x < boardSize; ++x) {
-                printField(board[x][y], isOwn);
+                System.out.print(String.format("%2s%s%3s", " ", board[x][y].getStringToPrint(isOwn), VERTICAL_SEPARATOR));
+                if (isOwn) { //reset field to print it white during next drawing, but only when draw own board (for multiplayer purposes)
+                    board[x][y].resetIsLastMove();
+                }
             }
             System.out.print('\n');
             printHorizontalLine();
         }
+    }
+
+    public ArrayList<Point> getShootPointsAroundGiven(ArrayList<Point> points) {
+        ArrayList<Point> ret = new ArrayList<>();
+        if (points.size() == 1) {
+            ret.add(new Point(points.get(0).x, points.get(0).y + 1));
+            ret.add(new Point(points.get(0).x, points.get(0).y - 1));
+            ret.add(new Point(points.get(0).x + 1, points.get(0).y));
+            ret.add(new Point(points.get(0).x - 1, points.get(0).y));
+        } else {
+            if (points.get(0).x - points.get(1).x == 0) { //vertical
+                points.forEach(p -> {
+                    ret.add(new Point(p.x, p.y + 1));
+                    ret.add(new Point(p.x, p.y - 1));
+                });
+            } else { //horizontal
+                points.forEach(p -> {
+                    ret.add(new Point(p.x + 1, p.y));
+                    ret.add(new Point(p.x - 1, p.y));
+                });
+            }
+        }
+        ret.removeIf((Point p) -> !isValidShootPoint(p));
+        return ret;
     }
 
     public boolean setShip(Ship ship) {
@@ -75,7 +91,7 @@ public class Board {
         return board[coords.x][coords.y].getShip();
     }
 
-    public void updateFieldsAroundShip(Ship ship) {
+    public void updateFieldsAroundSunkenShip(Ship ship) {
         Point shipStartPoint = ship.getStartPoint();
         int shipLength = ship.getLength();
         Field shipFields[] = getFieldsOfShip(shipStartPoint.x, shipStartPoint.y, shipLength, ship.getDirection(), false);
@@ -96,46 +112,6 @@ public class Board {
         return boardSize;
     }
 
-    private void printField(Field field, boolean isOwnBoard) {
-        char signToDraw;
-        String colorCode = "";
-        if (!field.isShot()) {
-            if (field.hasShip()) {
-                if (isOwnBoard) {
-                    signToDraw = OWN_SHIP;
-                } else {
-                    signToDraw = EMPTY_FIELD;
-                }
-            } else if (field.isTouchingSunkenShip()) {
-                signToDraw = MISHIT;
-            } else {
-                signToDraw = EMPTY_FIELD;
-            }
-        } else if (field.hasShip()) {
-            if (field.isLastMove()) {
-                if (isOwnBoard) {
-                    colorCode = ANSI_RED;
-                } else {
-                    colorCode = ANSI_GREEN;
-                }
-            } else {
-                colorCode = ANSI_BLUE;
-            }
-            signToDraw = HIT;
-        } else {
-            if (field.isLastMove()) {
-                if (isOwnBoard) {
-                    colorCode = ANSI_YELLOW;
-                } else {
-                    colorCode = ANSI_CYAN;
-                }
-            }
-            signToDraw = MISHIT;
-        }
-        System.out.printf(String.format("%2s%s%3s", " ", colorCode + signToDraw + ANSI_RESET, VERTICAL_SEPARATOR));
-        field.resetIsLastMove();
-    }
-
     private void printHorizontalLine() {
         for (int i = 0; i < boardSize * 7; ++i) {
             System.out.print(HORIZONTAL_SEPARATOR);
@@ -144,9 +120,9 @@ public class Board {
     }
 
     private void printHeader() {
-        System.out.printf(String.format("%6s", VERTICAL_SEPARATOR));
+        System.out.print(String.format("%6s", VERTICAL_SEPARATOR));
         for (int i = 0; i < boardSize; ++i) {
-            System.out.printf(String.format("%3s%3s", i, VERTICAL_SEPARATOR));
+            System.out.print(String.format("%3s%3s", i, VERTICAL_SEPARATOR));
         }
         System.out.print('\n');
     }
@@ -165,7 +141,7 @@ public class Board {
         }
     }
 
-    private Field[] getFieldsOfShip(int x, int y, int shipLength, Direction shipDirection, boolean isNewShip) {
+    private Field[] getFieldsOfShip(int x, int y, int shipLength, Direction shipDirection, boolean isNewShip) throws InvalidShipCoordinatesException {
         if (shipDirection.isHorizontal()) {
             return getFieldsOfHorizontalShip(x, y, shipLength, shipDirection.getValue(), isNewShip);
         } else {

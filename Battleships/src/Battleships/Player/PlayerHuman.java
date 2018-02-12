@@ -1,7 +1,6 @@
 package Battleships.Player;
 
 import Battleships.Coordinates.Direction.Direction;
-import Battleships.Coordinates.Direction.InvalidDirectionInitializerException;
 import Battleships.Coordinates.Point.Point;
 
 import java.util.Scanner;
@@ -17,8 +16,7 @@ public class PlayerHuman extends Player {
     }
 
     @Override
-    public void chooseName(int index) {
-        System.out.printf("Gracz nr %d: podaj swoje imię\n", index + 1);
+    public void chooseName() {
         name = scanner.nextLine();
     }
 

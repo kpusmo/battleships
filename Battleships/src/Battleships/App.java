@@ -5,7 +5,7 @@ import Battleships.Game.GameMode;
 
 public class App {
     public static void main(String args[]) {
-        Game game = new Game(GameMode.SINGLE_PLAYER, 20, 3, 5, 7, 10);
+        Game game = new Game(GameMode.SINGLE_PLAYER, 10, 1, 2, 3, 4);
         game.run();
     }
 }

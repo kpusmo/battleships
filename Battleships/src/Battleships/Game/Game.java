@@ -17,7 +17,7 @@ public class Game {
     private static final int INITIAL_TWO_DECKER_COUNT = 3;
     private static final int INITIAL_ONE_DECKER_COUNT = 4;
     private static final int SHIP_TYPE_COUNT = 4;
-
+    private final ShipType SHIP_TYPES[] = {ShipType.ONE_DECKER_SHIP, ShipType.TWO_DECKER_SHIP, ShipType.THREE_DECKER_SHIP, ShipType.FOUR_DECKER_SHIP};
     private int boardSize;
     private GameMode gameMode;
     private GameState gameState;
@@ -27,8 +27,8 @@ public class Game {
     private int shipUnitCount;
     private boolean printHitInfo;
     private boolean printSunkenInfo;
-    private final ShipType SHIP_TYPES[] = {ShipType.ONE_DECKER_SHIP, ShipType.TWO_DECKER_SHIP, ShipType.THREE_DECKER_SHIP, ShipType.FOUR_DECKER_SHIP};
     private int[] shipCounts;
+    private boolean noOutput = false;
 
     public Game(GameMode mode) {
         this(mode, INITIAL_BOARD_SIZE, INITIAL_FOUR_DECKER_COUNT, INITIAL_THREE_DECKER_COUNT, INITIAL_TWO_DECKER_COUNT, INITIAL_ONE_DECKER_COUNT);
@@ -46,7 +46,7 @@ public class Game {
 
         shipUnitCount = 0;
         for (int i = 0; i < shipCounts.length; ++i) {
-            shipUnitCount += shipCounts[i] * SHIP_TYPES[i].getValue();
+            shipUnitCount += shipCounts[i] * SHIP_TYPES[i].getLength();
         }
 
         firstPlayer = new PlayerHuman(boardSize);
@@ -58,6 +58,8 @@ public class Game {
                 secondPlayer = new PlayerHuman(boardSize);
                 break;
         }
+        firstPlayer.setEnemyBoard(secondPlayer.getBoard());
+        secondPlayer.setEnemyBoard(firstPlayer.getBoard());
         gameState = GameState.NOT_STARTED;
     }
 
@@ -120,14 +122,11 @@ public class Game {
             }
             Ship hitShip = enemyBoard.getShipOfPoint(shootPoint);
             if (hitShip.hit()) {
-                if (movingPlayer.getShowOutput()) {
-                    printSunkenInfo = true;
-                }
-                enemyBoard.updateFieldsAroundShip(hitShip);
+                movingPlayer.sunkenShip();
+                printSunkenInfo = true;
+                enemyBoard.updateFieldsAroundSunkenShip(hitShip);
             } else {
-                if (movingPlayer.getShowOutput()) {
-                    printHitInfo = true;
-                }
+                printHitInfo = true;
             }
             return playerMove(movingPlayer, enemy);
         }
@@ -137,7 +136,8 @@ public class Game {
     private void initializeGame() {
         Player players[] = {firstPlayer, secondPlayer};
         for (int i = 0; i < players.length; ++i) {
-            players[i].chooseName(i);
+            printMonit(players[i], (new StringBuilder()).append("Gracz nr ").append(i + 1).append(": podaj swoje imię\n").toString());
+            players[i].chooseName();
             setPlayerShips(players[i]);
         }
     }
@@ -145,15 +145,19 @@ public class Game {
     private void setPlayerShips(Player player) {
         printMonit(player, "Wpisz 0 jeśli chcesz losowo ustawić statki lub cokolwiek innego, jeśli chcesz to zrobić sam.");
         player.setShipPlacementMode();
+        if (player.getRandomShipPlacement()) {
+            noOutput = true;
+        }
         for (int i = 0; i < SHIP_TYPE_COUNT; ++i) {
             for (int j = 0; j < shipCounts[i]; ++j) {
-                if (player.getShowOutput() && !player.getRandomShipPlacement()) {
+                if (player.getShowOutput() && !noOutput) {
                     clearConsole();
                     player.getBoard().drawBoard(true);
                 }
                 setPlayerShip(player, SHIP_TYPES[i]);
             }
         }
+        noOutput = false;
     }
 
     private void setPlayerShip(Player player, ShipType shipType) {
@@ -171,12 +175,12 @@ public class Game {
             do {
                 printMonit(player, monit);
                 startPoint = player.chooseShipStartPoint();
-                monit = "Błędne współrzędne lub pole jest już zajęte. Wprowadź współrzędne ponownie (" +  shipType.getName() + ')';
+                monit = "Błędne współrzędne lub pole jest już zajęte. Wprowadź współrzędne ponownie (" + shipType.getName() + ')';
             } while (!playerBoard.isPointValidAndNotTaken(startPoint));
             ship.setStartPoint(startPoint);
 
             if (shipType == ShipType.ONE_DECKER_SHIP) {
-                ship.setDirection(Direction.UP);
+                ship.setDirection(Direction.UP); //direction does not matter when placing one decker ship
             } else {
                 monit = "Wprowadź kierunek statku:\n0 - góra\n1 - dół\n2 - lewo\n3 - prawo";
                 boolean validDirection;
@@ -200,7 +204,7 @@ public class Game {
     }
 
     private void printMonit(Player player, String monit) {
-        if (player.getShowOutput()) {
+        if (!noOutput && player.getShowOutput()) {
             System.out.println(monit);
         }
     }

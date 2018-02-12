@@ -5,29 +5,35 @@ import Battleships.Coordinates.Direction.Direction;
 import Battleships.Coordinates.Direction.InvalidDirectionInitializerException;
 import Battleships.Coordinates.Point.Point;
 
-import java.util.Random;
+import java.util.ArrayList;
 
 abstract public class Player {
-    protected Board board;
-    protected String name;
-    protected boolean showOutput;
-    protected Random rand;
-    protected int hitCount;
-    protected boolean randomShipPlacement;
+    private Board board;
+    Board enemyBoard;
+    String name;
+    boolean showOutput;
+    private int hitCount;
+    boolean randomShipPlacement;
+    ArrayList<Point> lastHits;
+    Point lastShootPoint;
 
-    public Player(int boardSize) {
+    Player(int boardSize) {
         board = new Board(boardSize);
         hitCount = 0;
-        rand = new Random();
+        lastHits = new ArrayList<>();
     }
     abstract public Point chooseShipStartPoint();
     abstract public Direction chooseShipDirection() throws InvalidDirectionInitializerException;
     abstract public Point shoot();
-    abstract public void chooseName(int index);
+    abstract public void chooseName();
     abstract public void setShipPlacementMode();
 
     public Board getBoard() {
         return board;
+    }
+
+    public void setEnemyBoard(Board enemyBoard) {
+        this.enemyBoard = enemyBoard;
     }
 
     public boolean getShowOutput() {
@@ -35,7 +41,12 @@ abstract public class Player {
     }
 
     public void hit() {
+        lastHits.add(lastShootPoint);
         ++hitCount;
+    }
+
+    public void sunkenShip() {
+        lastHits.clear();
     }
 
     public int getHitCount() {
@@ -46,15 +57,15 @@ abstract public class Player {
         return name;
     }
 
-    protected Point getRandomPoint() {
-        return new Point(rand.nextInt(board.getBoardSize()), rand.nextInt(board.getBoardSize()));
-    }
-
-    protected Direction getRandomDirection() {
-        return Direction.factory(rand.nextInt(4));
-    }
-
     public boolean getRandomShipPlacement() {
         return randomShipPlacement;
+    }
+
+    Point getRandomPoint() {
+        return Point.getRandom(board.getBoardSize());
+    }
+
+    Direction getRandomDirection() {
+        return Direction.getRandom();
     }
 }

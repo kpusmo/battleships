@@ -36,6 +36,6 @@ public class Ship {
     }
 
     public int getLength() {
-        return shipType.getValue();
+        return shipType.getLength();
     }
 }

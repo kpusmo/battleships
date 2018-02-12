@@ -1,5 +1,9 @@
 package Battleships.Coordinates.Direction;
 
+import Battleships.Coordinates.Point.Point;
+
+import java.util.Random;
+
 public enum Direction {
     UP(-1),
     DOWN(1),
@@ -7,6 +11,7 @@ public enum Direction {
     RIGHT(1);
 
     private int value;
+    private static Random rand = new Random();
 
     Direction(int value) {
         this.value = value;
@@ -37,5 +42,9 @@ public enum Direction {
 
     public boolean isHorizontal() {
         return this == LEFT || this == RIGHT;
+    }
+
+    public static Direction getRandom() {
+        return factory(rand.nextInt(4));
     }
 }

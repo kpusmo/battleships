@@ -1,21 +1,21 @@
 package Battleships.Ship;
 
 public enum ShipType {
-    ONE_DECKER_SHIP(1, "Jednomasztowiec"),
-    TWO_DECKER_SHIP(2, "Dwumasztowiec"),
-    THREE_DECKER_SHIP(3, "Trójmasztowiec"),
-    FOUR_DECKER_SHIP(4, "Czteromasztowiec");
+    ONE_DECKER_SHIP(1, "jednomasztowiec"),
+    TWO_DECKER_SHIP(2, "dwumasztowiec"),
+    THREE_DECKER_SHIP(3, "trójmasztowiec"),
+    FOUR_DECKER_SHIP(4, "czteromasztowiec");
 
-    private int value;
+    private int length;
     private String name;
 
-    ShipType(int value, String name) {
-        this.value = value;
+    ShipType(int length, String name) {
+        this.length = length;
         this.name = name;
     }
 
-    public int getValue() {
-        return value;
+    public int getLength() {
+        return length;
     }
 
     public String getName() {
