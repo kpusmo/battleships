@@ -16,6 +16,8 @@ abstract public class Player {
     boolean randomShipPlacement;
     ArrayList<Point> lastHits;
     Point lastShootPoint;
+    boolean wasLastHit;
+    boolean wasLastSunken;
 
     Player(int boardSize) {
         board = new Board(boardSize);
@@ -43,10 +45,28 @@ abstract public class Player {
     public void hit() {
         lastHits.add(lastShootPoint);
         ++hitCount;
+        wasLastHit = true;
     }
 
     public void sunkenShip() {
         lastHits.clear();
+        wasLastSunken = true;
+    }
+
+    public boolean wasLastHit() {
+        return wasLastHit;
+    }
+
+    public boolean wasLastSunken() {
+        return wasLastSunken;
+    }
+
+    public void resetLastHit() {
+        wasLastHit = false;
+    }
+
+    public void resetLastSunken() {
+        wasLastSunken = false;
     }
 
     public int getHitCount() {

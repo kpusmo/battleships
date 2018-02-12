@@ -25,8 +25,6 @@ public class Game {
     private Player secondPlayer;
     private String winnerName;
     private int shipUnitCount;
-    private boolean printHitInfo;
-    private boolean printSunkenInfo;
     private int[] shipCounts;
     private boolean noOutput = false;
 
@@ -92,13 +90,13 @@ public class Game {
             movingPlayer.getBoard().drawBoard(true);
             System.out.print("\nPlansza przeciwnika:\n\n\n");
             enemy.getBoard().drawBoard(false);
-            if (printHitInfo) {
+            if (movingPlayer.wasLastHit()) {
                 printMonit(movingPlayer, "Trafiony!\n");
-                printHitInfo = false;
+                movingPlayer.resetLastHit();
             }
-            if (printSunkenInfo) {
+            if (movingPlayer.wasLastSunken()) {
                 printMonit(movingPlayer, "Trafiony zatopiony!\n");
-                printSunkenInfo = false;
+                movingPlayer.resetLastSunken();
             }
         }
     }
@@ -123,10 +121,7 @@ public class Game {
             Ship hitShip = enemyBoard.getShipOfPoint(shootPoint);
             if (hitShip.hit()) {
                 movingPlayer.sunkenShip();
-                printSunkenInfo = true;
                 enemyBoard.updateFieldsAroundSunkenShip(hitShip);
-            } else {
-                printHitInfo = true;
             }
             return playerMove(movingPlayer, enemy);
         }

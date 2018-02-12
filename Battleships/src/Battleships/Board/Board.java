@@ -31,9 +31,7 @@ public class Board {
             System.out.printf("%3s%3s", y, VERTICAL_SEPARATOR);
             for (int x = 0; x < boardSize; ++x) {
                 System.out.print(String.format("%2s%s%3s", " ", board[x][y].getStringToPrint(isOwn), VERTICAL_SEPARATOR));
-                if (isOwn) { //reset field to print it white during next drawing, but only when draw own board (for multiplayer purposes)
-                    board[x][y].resetIsLastMove();
-                }
+                board[x][y].resetIsLastMove();
             }
             System.out.print('\n');
             printHorizontalLine();
