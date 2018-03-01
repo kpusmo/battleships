@@ -55,8 +55,12 @@ public class PlayerHuman extends Player {
 
     @Override
     public void setShipPlacementMode() {
-        if (scanner.next().equals("0")) {
+        if (scanner.nextLine().equals("0")) {
             randomShipPlacement = true;
         }
+    }
+
+    public void clearScannerBuffer() {
+        scanner.nextLine();
     }
 }

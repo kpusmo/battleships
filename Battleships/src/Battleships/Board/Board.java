@@ -111,7 +111,7 @@ public class Board {
     }
 
     private void printHorizontalLine() {
-        for (int i = 0; i < boardSize * 7; ++i) {
+        for (int i = 0; i < (boardSize + 1) * 6; ++i) {
             System.out.print(HORIZONTAL_SEPARATOR);
         }
         System.out.print('\n');

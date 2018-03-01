@@ -35,6 +35,10 @@ public class Ship {
         return startPoint;
     }
 
+    public ShipType getShipType() {
+        return shipType;
+    }
+
     public int getLength() {
         return shipType.getLength();
     }

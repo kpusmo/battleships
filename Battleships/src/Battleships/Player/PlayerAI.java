@@ -43,4 +43,7 @@ public class PlayerAI extends Player {
     public void setShipPlacementMode() {
         return;
     }
+
+    public void clearScannerBuffer() {
+    }
 }

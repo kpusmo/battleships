@@ -7,7 +7,7 @@ import Battleships.Coordinates.Point.Point;
 
 import java.util.ArrayList;
 
-abstract public class Player {
+abstract public class Player implements ClearBufferInterface {
     private Board board;
     Board enemyBoard;
     String name;
@@ -16,8 +16,8 @@ abstract public class Player {
     boolean randomShipPlacement;
     ArrayList<Point> lastHits;
     Point lastShootPoint;
-    boolean wasLastHit;
-    boolean wasLastSunken;
+    private boolean wasLastHit;
+    private boolean wasLastSunken;
 
     Player(int boardSize) {
         board = new Board(boardSize);
@@ -67,6 +67,7 @@ abstract public class Player {
 
     public void resetLastSunken() {
         wasLastSunken = false;
+        wasLastHit = false;
     }
 
     public int getHitCount() {

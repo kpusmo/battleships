@@ -10,6 +10,9 @@ import Battleships.Player.PlayerHuman;
 import Battleships.Ship.Ship;
 import Battleships.Ship.ShipType;
 
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
 public class Game {
     private static final int INITIAL_BOARD_SIZE = 10;
     private static final int INITIAL_FOUR_DECKER_COUNT = 1;
@@ -65,45 +68,47 @@ public class Game {
         initializeGame();
         gameState = GameState.STARTED;
         gameLoop();
-        gameFinished();
     }
 
     private void gameFinished() {
+        drawPlayerBoards(firstPlayer, secondPlayer.getBoard());
+        drawPlayerBoards(secondPlayer, firstPlayer.getBoard());
+        System.out.print("\n\n\n\n\n");
         System.out.printf("Gra zakończona - zwycięzca: %s\n", winnerName);
     }
 
     private void gameLoop() {
         while (gameState != GameState.FINISHED) {
-            if (!playerMove(firstPlayer, secondPlayer)) {
-                playerMove(secondPlayer, firstPlayer);
+            if (playerMove(firstPlayer, secondPlayer.getBoard())) {
+                gameFinished();
+                return;
+            }
+            if (playerMove(secondPlayer, firstPlayer.getBoard())) {
+                gameFinished();
+                return;
             }
         }
-        drawPlayerBoards(firstPlayer, secondPlayer);
-        drawPlayerBoards(secondPlayer, firstPlayer);
-        System.out.print("\n\n\n\n\n");
     }
 
-    private void drawPlayerBoards(Player movingPlayer, Player enemy) {
-        if (movingPlayer.getShowOutput()) {
+    private void drawPlayerBoards(Player player, Board enemyBoard) {
+        if (player.getShowOutput()) {
             clearConsole();
-            System.out.print("Twoja plansza:\n\n");
-            movingPlayer.getBoard().drawBoard(true);
-            System.out.print("\nPlansza przeciwnika:\n\n\n");
-            enemy.getBoard().drawBoard(false);
-            if (movingPlayer.wasLastHit()) {
-                printMonit(movingPlayer, "Trafiony!\n");
-                movingPlayer.resetLastHit();
-            }
-            if (movingPlayer.wasLastSunken()) {
-                printMonit(movingPlayer, "Trafiony zatopiony!\n");
-                movingPlayer.resetLastSunken();
+            printMonit(player, "Twoja plansza:\n\n");
+            player.getBoard().drawBoard(true);
+            printMonit(player, "\nPlansza przeciwnika:\n\n\n");
+            enemyBoard.drawBoard(false);
+            if (player.wasLastSunken()) {
+                printMonit(player, "Trafiony zatopiony!\n");
+                player.resetLastSunken();
+            } else if (player.wasLastHit()) {
+                printMonit(player, "Trafiony!\n");
+                player.resetLastHit();
             }
         }
     }
 
-    private boolean playerMove(Player movingPlayer, Player enemy) {
-        drawPlayerBoards(movingPlayer, enemy);
-        Board enemyBoard = enemy.getBoard();
+    private boolean playerMove(Player movingPlayer, Board enemyBoard) {
+        drawPlayerBoards(movingPlayer, enemyBoard);
         Point shootPoint;
         String monit = "Wprowadź współrzędne strzału";
         do {
@@ -123,7 +128,7 @@ public class Game {
                 movingPlayer.sunkenShip();
                 enemyBoard.updateFieldsAroundSunkenShip(hitShip);
             }
-            return playerMove(movingPlayer, enemy);
+            return playerMove(movingPlayer, enemyBoard);
         }
         return false;
     }
@@ -161,37 +166,54 @@ public class Game {
         String monit = "";
         do {
             printMonit(player, monit);
-            Point startPoint;
-            if (shipType == ShipType.ONE_DECKER_SHIP) {
-                monit = "Wporwadź współrzędne (x, y) jednomasztowca";
-            } else {
-                monit = "Wprowadź współrzędne (x, y) początkowego punktu dla statku typu " + shipType.getName();
-            }
-            do {
-                printMonit(player, monit);
-                startPoint = player.chooseShipStartPoint();
-                monit = "Błędne współrzędne lub pole jest już zajęte. Wprowadź współrzędne ponownie (" + shipType.getName() + ')';
-            } while (!playerBoard.isPointValidAndNotTaken(startPoint));
-            ship.setStartPoint(startPoint);
-
-            if (shipType == ShipType.ONE_DECKER_SHIP) {
-                ship.setDirection(Direction.UP); //direction does not matter when placing one decker ship
-            } else {
-                monit = "Wprowadź kierunek statku:\n0 - góra\n1 - dół\n2 - lewo\n3 - prawo";
-                boolean validDirection;
-                do {
-                    printMonit(player, monit);
-                    try {
-                        validDirection = true;
-                        ship.setDirection(player.chooseShipDirection());
-                    } catch (InvalidDirectionInitializerException ex) {
-                        validDirection = false;
-                        monit = "Podałeś błędny kierunek. Spróbuj ponownie\n0 - góra\n1 - dół\n2 - lewo\n3 - prawo";
-                    }
-                } while (!validDirection);
-            }
+            setShipStartPoint(player, ship);
+            setShipDirection(player, ship);
             monit = "Nie możesz tak ustawić statku - wychodzi on poza planszę, lub dotyka innego statku. Spróbuj ponownie.";
         } while (!playerBoard.setShip(ship));
+    }
+
+    private void setShipDirection(Player player, Ship ship) {
+        ShipType shipType = ship.getShipType();
+        if (shipType == ShipType.ONE_DECKER_SHIP) {
+            ship.setDirection(Direction.UP); //direction does not matter when placing one decker ship
+            return;
+        }
+        String monit = "Wprowadź kierunek statku:\n0 - góra\n1 - dół\n2 - lewo\n3 - prawo";
+        boolean validDirection = false;
+        do {
+            printMonit(player, monit);
+            try {
+                ship.setDirection(player.chooseShipDirection());
+                validDirection = true;
+            } catch (InvalidDirectionInitializerException | InputMismatchException ex) {
+                player.clearScannerBuffer();
+                monit = "Podałeś błędny kierunek. Spróbuj ponownie\n0 - góra\n1 - dół\n2 - lewo\n3 - prawo";
+            }
+        } while (!validDirection);
+    }
+
+    private void setShipStartPoint(Player player, Ship ship) {
+        String monit;
+        Point startPoint = new Point(-1, -1);
+        ShipType shipType = ship.getShipType();
+        if (shipType == ShipType.ONE_DECKER_SHIP) {
+            monit = "Wporwadź współrzędne (x, y) jednomasztowca";
+        } else {
+            monit = "Wprowadź współrzędne (x, y) początkowego punktu dla statku typu " + shipType.getName();
+        }
+        Board playerBoard = player.getBoard();
+        boolean validInput = false;
+        do {
+            printMonit(player, monit);
+            try {
+                startPoint = player.chooseShipStartPoint();
+                validInput = true;
+            } catch (InputMismatchException ex) {
+                player.clearScannerBuffer();
+            }
+            monit = "Błędne współrzędne lub pole jest już zajęte. Wprowadź współrzędne ponownie (" + shipType.getName() + ')';
+        } while (!(validInput && playerBoard.isPointValidAndNotTaken(startPoint)));
+        ship.setStartPoint(startPoint);
     }
 
     private void clearConsole() {

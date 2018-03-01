@@ -51,7 +51,7 @@ class Field {
                     colorCode = ANSI_GREEN;
                 }
             } else {
-                colorCode = ANSI_BLUE;
+                colorCode = ANSI_PURPLE;
             }
             signToDraw = HIT;
         } else {
