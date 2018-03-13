@@ -56,6 +56,7 @@ public class ScoreBoard {
 
         for (Map.Entry<String, Integer> entry : sortByValue(board).entrySet()) {
             System.out.printf("%s%5s%3s%38s%3s%17s%3s\n", VERTICAL_SEPARATOR, i++, VERTICAL_SEPARATOR, entry.getKey().trim(), VERTICAL_SEPARATOR, entry.getValue(), VERTICAL_SEPARATOR);
+            printHorizontalLine();
             if (i == MAX_SCORE_COUNT) {
                 return;
             }
