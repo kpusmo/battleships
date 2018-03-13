@@ -1,5 +1,6 @@
 package Battleships.Game;
 
+import Battleships.BestScores.ScoreBoard;
 import Battleships.Board.Board;
 import Battleships.Coordinates.Direction.Direction;
 import Battleships.Coordinates.Direction.InvalidDirectionInitializerException;
@@ -26,7 +27,8 @@ public class Game {
     private GameState gameState;
     private Player firstPlayer;
     private Player secondPlayer;
-    private String winnerName;
+    private Player winner;
+    private ScoreBoard scoreBoard;
     private int shipUnitCount;
     private int[] shipCounts;
     private boolean noOutput = false;
@@ -40,6 +42,7 @@ public class Game {
     }
 
     public Game(GameMode mode, int size, int fourDeckerCount, int threeDeckerCount, int twoDeckerCount, int oneDeckerCount) {
+        scoreBoard = new ScoreBoard();
         boardSize = size;
         gameMode = mode;
         int shipCounts[] = {oneDeckerCount, twoDeckerCount, threeDeckerCount, fourDeckerCount};
@@ -65,6 +68,14 @@ public class Game {
     }
 
     public void run() {
+        System.out.println("Pokaż tablicę wyników: 1;\nRozpocznij grę: cokolwiek innego");
+        Scanner scanner = new Scanner(System.in);
+        String choice = scanner.nextLine();
+        while (choice.equals("1")) {
+            scoreBoard.print();
+            System.out.println("Pokaż tablicę wyników: 1;\nRozpocznij grę: cokolwiek innego");
+            choice = scanner.nextLine();
+        }
         initializeGame();
         gameState = GameState.STARTED;
         gameLoop();
@@ -74,7 +85,11 @@ public class Game {
         drawPlayerBoards(firstPlayer, secondPlayer.getBoard());
         drawPlayerBoards(secondPlayer, firstPlayer.getBoard());
         System.out.print("\n\n\n\n\n");
-        System.out.printf("Gra zakończona - zwycięzca: %s\n", winnerName);
+        System.out.printf("Gra zakończona - zwycięzca: %s\n", winner.getName());
+        if (winner instanceof PlayerHuman) {
+            scoreBoard.addToScoreBoard(winner);
+        }
+        scoreBoard.saveToFile();
     }
 
     private void gameLoop() {
@@ -116,10 +131,11 @@ public class Game {
             shootPoint = movingPlayer.shoot();
             monit = "Błędne współrzędne. Spróbuj ponownie";
         } while (!enemyBoard.isValidShootPoint(shootPoint));
+        movingPlayer.increaseShootCount();
         if (enemyBoard.shoot(shootPoint)) {
             movingPlayer.hit();
             if (movingPlayer.getHitCount() == shipUnitCount) {
-                winnerName = movingPlayer.getName();
+                winner = movingPlayer;
                 gameState = GameState.FINISHED;
                 return true;
             }

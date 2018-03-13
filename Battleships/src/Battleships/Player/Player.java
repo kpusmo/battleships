@@ -13,6 +13,7 @@ abstract public class Player implements ClearBufferInterface {
     String name;
     boolean showOutput;
     private int hitCount;
+    private int shootCount;
     boolean randomShipPlacement;
     ArrayList<Point> lastHits;
     Point lastShootPoint;
@@ -26,9 +27,9 @@ abstract public class Player implements ClearBufferInterface {
     }
     abstract public Point chooseShipStartPoint();
     abstract public Direction chooseShipDirection() throws InvalidDirectionInitializerException;
-    abstract public Point shoot();
     abstract public void chooseName();
     abstract public void setShipPlacementMode();
+    abstract public Point shoot();
 
     public Board getBoard() {
         return board;
@@ -76,6 +77,14 @@ abstract public class Player implements ClearBufferInterface {
 
     public String getName() {
         return name;
+    }
+
+    public int getShootCount() {
+        return shootCount;
+    }
+
+    public void increaseShootCount() {
+        ++shootCount;
     }
 
     public boolean getRandomShipPlacement() {
